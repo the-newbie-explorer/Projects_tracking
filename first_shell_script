@@ -1,0 +1,4 @@
+#! /bin/bash
+
+
+echo "My name is Yashi" #echo to print on screen when we run the script
