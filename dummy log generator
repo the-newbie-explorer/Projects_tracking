@@ -1,0 +1,9 @@
+ #! /bin/bash
+
+ERROR_PATTERNS=('error' 'warn' 'crit')
+
+for i in $(seq 1 100); do
+	rand_index=$((RANDOM % ${#ERROR_PATTERNS[@]}))
+
+  echo "$(date '+%Y-%m-%d %H:%M:%S') ${ERROR_PATTERNS[$rand_index]} INFO Dummy log entry number $i" >> dummy.log
+done
