@@ -1,0 +1,60 @@
+ #! /bin/bash
+
+#sudo apt install libnotify-bin   # Debian/Ubuntu :: The notification deamon is already installed
+
+#same code
+
+LOG_DIR=/home/yashi/scripts/projects/log_parsing_script
+ERROR_PATTERNS=("error" "crit" "warn")
+ALERT_EMAIL="theclouddevopengineer@gmail.com"
+
+MESSAGES=(
+    "Don't be lazy — you got this, tunabara!!"
+    "Come on, 10 is the minimum, you can do it, luzyduu!"
+    "Hurabura! Aim higher."
+    "FITALAA! what happened to you? Ten is the magic number, try again!"
+    "I am tired. Think big, type at least 10!"
+    "Puchipuuu! I am spooooon feeeding this to you, 10! 10! 10!"
+    "Your future self will thank you, bhature — 10 or more!"
+    "Phu falala, i am done with you..."
+    "Dhum tana nana nana, dhum tananan.... 10 rey baba!"
+)
+
+
+while true; do
+read -p "How many minimum number of error can you troubleshoot today? (minimum 10) : " threshold   #read -prompt "message" parameter
+threshold=${threshold:-10}#if empty, then 10 is considered
+
+if (( threshold >= 10 )); then
+	break
+else
+	rand_index=$((RANDOM % ${#MESSAGES[@]}))            #without # it takes the whole array, with # it picks one 0 - length -1; random: 0 - 32767
+	echo "${MESSAGES[$rand_index]}"
+fi
+done
+
+mapfile -t LOG_FILE < <(find "$LOG_DIR" -name "*.log" -mtime -1)
+
+echo "The List of log files written within last 24 hours"
+
+count=1
+for FILE in ${LOG_FILE[@]}; do
+	echo -e "$count. ${FILE##*/}"
+	echo "Now, here is a quick summary of ${FILE##*/}"
+	
+	for PATTERN in ${ERROR_PATTERNS[@]};do
+		err_count=$(grep -c "$PATTERN" "$FILE")
+		echo "It contains $PATTERN count of which is $err_count"
+	if [ "$err_count" -gt "$threshold" ]; then         #10 is for the example, since there are 11 total. [$] and -gt, if (())>
+            {
+              echo "Subject: Needs attention from the log parsing script"
+              echo "From: theclouddevopengineer@gmail.com"
+              echo "To: $ALERT_EMAIL"
+              echo
+              echo "Your ${FILE##*/} has unusually high '$PATTERN'."
+              echo "Do you know how many? A total of $err_count."
+	    } | msmtp "$ALERT_EMAIL"
+        fi
+done
+	((count++))
+done
